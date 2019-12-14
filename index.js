@@ -119,7 +119,7 @@ async function listComments(request, url) {
   }
 
   let list = await KV.list({
-    prefix: `comment:${path}`,
+    prefix: `comment:${path}:`,
     limit: limit,
     cursor: cursor
   })
