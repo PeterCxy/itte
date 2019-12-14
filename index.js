@@ -82,6 +82,12 @@ function validateCommentObject(obj) {
     throw "No Valid Path Provided"
   }
 
+  try {
+    new URL(obj.path)
+  } catch (err) {
+    throw "Invalid URL"
+  }
+
   if (typeof obj.secret != "string" || obj.secret.length >= 255) {
     throw "No Valid Secret Provided"
   }
