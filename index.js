@@ -129,7 +129,9 @@ async function listComments(request, url) {
   }
 
   for (key of list.keys) {
-    res.list.push(JSON.parse(await KV.get(key.name)))
+    let obj = JSON.parse(await KV.get(key.name))
+    delete obj.secret
+    res.list.push(obj)
   }
 
   if (!list.list_complete) {
@@ -143,9 +145,54 @@ async function listComments(request, url) {
   })
 }
 
+async function editComment(request, url) {
+  var data
+
+  try {
+    data = await request.json()
+  } catch (err) {
+    return buildErrorResponse("Invalid JSON object")
+  }
+
+  if (!(data.path && data.created_at && data.content && data.secret
+      && typeof data.path == "string"
+      && typeof data.created_at == "number"
+      && typeof data.content == "string"
+      && typeof data.secret == "string"
+      && data.content.length < 1024)) {
+    return buildErrorResponse("You must specify `path`, `created_at`, `secret` and new `content`")
+  }
+
+  let dateKey = Number.MAX_SAFE_INTEGER - data.created_at
+
+  let key = `comment:${data.path}:${dateKey}`
+
+  let origData = await KV.get(key)
+  if (!origData) {
+    return buildErrorResponse("Original Comment Not Found")
+  }
+
+  origData = JSON.parse(origData)
+  if (origData.secret != data.secret) {
+    return buildErrorResponse("Wrong Secret")
+  }
+
+  origData.content = data.content
+  await KV.put(key, JSON.stringify(origData))
+
+  delete origData.secret
+
+  return new Response(JSON.stringify(origData), {
+    headers: {
+      "content-type": "application/json"
+    }
+  })
+}
+
 const HANDLERS = {
   "/comments": {
     "PUT": postComment,
-    "GET": listComments
+    "GET": listComments,
+    "PATCH": editComment
   }
 }
