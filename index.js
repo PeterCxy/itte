@@ -9,12 +9,22 @@ async function handleRequest(request) {
 
   for (key of Object.keys(HANDLERS)){
     if (url.pathname.startsWith(key) && HANDLERS[key][request.method] != null) {
-      return HANDLERS[key][request.method](request, url)
+      try {
+        return await HANDLERS[key][request.method](request, url)
+      } catch (err) {
+        return buildErrorResponse(err)
+      }
     }
   }
 
   return new Response(null, {
     status: 404
+  })
+}
+
+function buildErrorResponse(err) {
+  return new Response(err, {
+    status: 400
   })
 }
 
@@ -24,9 +34,7 @@ async function postComment(request, url) {
   try {
     data = await request.json()
   } catch (err) {
-    return new Response("Invalid JSON object", {
-      status: 400
-    })
+    return buildErrorResponse("Invalid JSON object")
   }
 
   try {
@@ -89,8 +97,55 @@ function sanitizeHTML(str) {
     .replace(">", "&gt;")
 }
 
+async function listComments(request, url) {
+  if (!url.searchParams.has("path")) {
+    return buildErrorResponse("What Path do you want?")
+  }
+
+  let path = url.searchParams.get("path")
+  let limit = 5
+  let cursor = null
+
+  if (url.searchParams.has("limit")) {
+    try {
+      limit = Number.parseInt(url.searchParams.get("limit"))
+    } catch (err) {
+      return buildErrorResponse("Invalid number")
+    }
+  }
+
+  if (url.searchParams.has("cursor")) {
+    cursor = url.searchParams.get("cursor")
+  }
+
+  let list = await KV.list({
+    prefix: `comment:${path}`,
+    limit: limit,
+    cursor: cursor
+  })
+  let res = {
+    ok: true,
+    list: []
+  }
+
+  for (key of list.keys) {
+    res.list.push(JSON.parse(await KV.get(key.name)))
+  }
+
+  if (!list.list_complete) {
+    res.cursor = list.cursor
+  }
+
+  return new Response(JSON.stringify(res), {
+    headers: {
+      "content-type": "application/json"
+    }
+  })
+}
+
 const HANDLERS = {
   "/comments": {
-    "PUT": postComment
+    "PUT": postComment,
+    "GET": listComments
   }
 }
