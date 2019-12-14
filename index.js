@@ -4,6 +4,16 @@ addEventListener('fetch', event => {
 
 const REGEX_EMAIL = /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/
 
+function makeid(length) {
+  var result           = '';
+  var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  var charactersLength = characters.length;
+  for ( var i = 0; i < length; i++ ) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+  return result;
+}
+
 async function handleRequest(request) {
   let url = new URL(request.url)
 
@@ -47,13 +57,14 @@ async function postComment(request, url) {
 
   data.created_at = Date.now()
   data.content = sanitizeHTML(data.content)
+  data.id = makeid(5)
 
   // Complement the actual key in store
   // When lexicographically ordered, this will be in reversed-time order
   // which is what we want
   let dateKey = Number.MAX_SAFE_INTEGER - data.created_at
 
-  let key = `comment:${data.path}:${dateKey}`
+  let key = `comment:${data.path}:${dateKey}:${data.id}`
 
   await KV.put(key, JSON.stringify(data))
 
@@ -154,18 +165,19 @@ async function editComment(request, url) {
     return buildErrorResponse("Invalid JSON object")
   }
 
-  if (!(data.path && data.created_at && data.content && data.secret
+  if (!(data.path && data.created_at && data.content && data.secret && data.id
       && typeof data.path == "string"
       && typeof data.created_at == "number"
       && typeof data.content == "string"
       && typeof data.secret == "string"
+      && typeof data.id == "string"
       && data.content.length < 1024)) {
-    return buildErrorResponse("You must specify `path`, `created_at`, `secret` and new `content`")
+    return buildErrorResponse("You must specify `path`, `id`, `created_at`, `secret` and new `content`")
   }
 
   let dateKey = Number.MAX_SAFE_INTEGER - data.created_at
 
-  let key = `comment:${data.path}:${dateKey}`
+  let key = `comment:${data.path}:${dateKey}:${data.id}`
 
   let origData = await KV.get(key)
   if (!origData) {
