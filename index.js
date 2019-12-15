@@ -458,7 +458,6 @@ function frontend() {
     fetch(url)
       .then((resp) => resp.json())
       .then((obj) => {
-        console.log(obj)
         for (comm of obj.list) {
           commentList.push(comm)
           let index = commentList.length - 1
