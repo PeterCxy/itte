@@ -428,6 +428,8 @@ function frontend() {
         </div>
       </div>
     `
+    elem.getElementsByClassName("avatar")[0]
+      .appendChild(generateIdenticon(comm.content.hashCode(), 4, 48))
     return elem
   }
 
@@ -458,6 +460,92 @@ function frontend() {
       return interval + " minutes";
     }
     return Math.floor(seconds) + " seconds";
+  }
+
+  // <https://gist.github.com/iperelivskiy/4110988>
+  // This do not need to be secure in any sense
+  String.prototype.hashCode = function () {
+    /* Simple hash function. */
+    var a = 1, c = 0, h, o;
+    if (this) {
+      a = 0;
+      /*jshint plusplus:false bitwise:false*/
+      for (h = this.length - 1; h >= 0; h--) {
+        o = this.charCodeAt(h);
+        a = (a << 6 & 268435455) + o + (o << 14);
+        c = a & 266338304;
+        a = c !== 0 ? a ^ c >> 21 : a;
+      }
+    }
+    return String(a);
+  }
+
+  // <https://github.com/posativ/isso/blob/master/isso/js/app/lib/identicons.js>
+  function pad(n, width) {
+    return n.length >= width ? n : new Array(width - n.length + 1).join("0") + n;
+  };
+
+  /**
+   * Fill in a square on the canvas.
+   */
+  function fill(svg, x, y, padding, size, color) {
+    var rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+
+    rect.setAttribute("x", padding + x * size);
+    rect.setAttribute("y", padding + y * size);
+    rect.setAttribute("width", size);
+    rect.setAttribute("height", size);
+    rect.setAttribute("style", "fill: " + color);
+
+    svg.appendChild(rect);
+  };
+
+  const AVATAR_FG = [
+    "#9abf88", "#5698c4", "#e279a3", "#9163b6",
+    "#be5168", "#f19670", "#e4bf80", "#447c69"
+  ]
+
+  const AVATAR_BG = "#f0f0f0"
+  
+  const GRID = 5
+
+  function generateIdenticon(key, padding, size) {
+
+    var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("version", "1.1");
+    svg.setAttribute("viewBox", "0 0 " + size + " " + size);
+    svg.setAttribute("preserveAspectRatio", "xMinYMin meet");
+    svg.setAttribute("shape-rendering", "crispEdges");
+    fill(svg, 0, 0, 0, size + 2 * padding, AVATAR_BG);
+
+    if (typeof key === null) {
+      return svg;
+    }
+
+    var hash = pad((parseInt(key.substr(-16), 16) % Math.pow(2, 18)).toString(2), 18),
+      index = 0;
+
+    svg.setAttribute("data-hash", key);
+
+    var i = parseInt(hash.substring(hash.length - 3, hash.length), 2),
+      color = AVATAR_FG[i % AVATAR_FG.length];
+
+    for (var x = 0; x < Math.ceil(GRID / 2); x++) {
+      for (var y = 0; y < GRID; y++) {
+
+        if (hash.charAt(index) === "1") {
+          fill(svg, x, y, padding, 8, color);
+
+          // fill right sight symmetrically
+          if (x < Math.floor(GRID / 2)) {
+            fill(svg, (GRID - 1) - x, y, padding, 8, color);
+          }
+        }
+        index++;
+      }
+    }
+
+    return svg;
   }
 }
 
