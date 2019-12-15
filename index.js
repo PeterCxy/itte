@@ -494,6 +494,8 @@ function frontend() {
               ${timeSince(created_at)}
             </time>
           </a>
+          <span class="spacer spacer-edit" style="visibility: hidden">&sol;</span>
+          <a class="permalink permalink-edit" href="#" style="visibility: hidden">Edit</a>
         </div>
         <div class="text">
           ${comm.content}
@@ -504,6 +506,64 @@ function frontend() {
     `
     elem.getElementsByClassName("avatar")[0]
       .appendChild(generateIdenticon(comm.content.hashCode(), 4, 48))
+    if (localStorage.getItem(comm.id) == "true") {
+      // This is something we have posted; we can edit
+      elem.getElementsByClassName("spacer-edit")[0].style["visibility"] = "visible"
+      let link = elem.getElementsByClassName("permalink-edit")[0]
+      link.style["visibility"] = "visible"
+      let editing = false
+      let updating = false
+      let editorWrapper = null
+      link.addEventListener("click", (ev) => {
+        ev.preventDefault()
+        let text = elem.getElementsByClassName("text")[0]
+        if (!editing) {
+          editing = true
+          link.textContent = "Save"
+          elem.getElementsByClassName("avatar")[0].style["display"] = "none"
+          text.style["display"] = "none"
+          editorWrapper = document.createElement("div")
+          editorWrapper.classList.add("textarea-wrapper")
+          editorWrapper.innerHTML = `
+            <div class="textarea" contenteditable="true">${text.textContent}</div>
+          `
+          elem.getElementsByClassName("text-wrapper")[0].insertBefore(editorWrapper, text)
+        } else if (!updating) {
+          updating = true
+
+          let obj = {
+            secret: localStorage.getItem("secret"),
+            content: elem.getElementsByClassName("textarea")[0].textContent,
+            username: comm.username,
+            email: comm.email,
+            path: commentPath,
+            created_at: comm.created_at,
+            id: comm.id
+          }
+
+          fetch(`${BASE_URL}/comments`, {
+            method: 'PATCH',
+            body: JSON.stringify(obj),
+            headers: {
+              "content-type": "application/json"
+            }
+          }).then((resp) => resp.json())
+            .then((resp) => {
+              editing = false
+              updating = false
+              link.textContent = "Edit"
+              elem.getElementsByClassName("avatar")[0].style["display"] = "block"
+              elem.getElementsByClassName("text-wrapper")[0].removeChild(editorWrapper)
+              text.style["display"] = "block"
+              text.textContent = resp.content
+            })
+            .catch((err) => {
+              updating = false
+              console.log(err)
+            })
+        }
+      })
+    }
     return elem
   }
 
