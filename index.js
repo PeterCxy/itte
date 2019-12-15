@@ -314,6 +314,7 @@ function frontend() {
   var commentListElement = null
   var currentCursor = null
   var commentList = []
+  var postedCommentCount = 0
   function contentLoaded() {
     if (localStorage.getItem("secret") == null) {
       // Make sure we have generated a secret here
@@ -378,6 +379,63 @@ function frontend() {
         editor.textContent = COMMENT_PLACEHOLDER
         editor.classList.add("placeholder")
       }
+    })
+
+    let author = commentElement.querySelector('input[name="author"]')
+    let email = commentElement.querySelector('input[name="email"]')
+    let submit = commentElement.querySelector('input[type="submit"]')
+
+    if (localStorage.getItem("author") != null) {
+      author.value = localStorage.getItem("author")
+    }
+
+    if (localStorage.getItem("email") != null) {
+      email.value = localStorage.getItem("email")
+    }
+
+    submit.addEventListener("click", () => {
+      if (!email.checkValidity()) return
+
+      let obj = {
+        secret: localStorage.getItem("secret"),
+        content: editor.textContent,
+        username: author.value,
+        email: email.value,
+        path: commentPath
+      }
+
+      if (obj.content == COMMENT_PLACEHOLDER || obj.content.length < 3 || obj.username.length < 1 || obj.email.length < 1) {
+        return
+      }
+
+      submit.disabled = true
+      fetch(`${BASE_URL}/comments`, {
+        method: 'PUT',
+        body: JSON.stringify(obj),
+        headers: {
+          "content-type": "application/json"
+        }
+      }).then((resp) => resp.json())
+        .then((obj) => {
+          postedCommentCount++
+          commentList.splice(0, 0, obj)
+          let elem = createCommentElement(obj, -postedCommentCount)
+          if (!commentListElement.hasChildNodes()) {
+            commentListElement.appendChild(elem)
+          } else {
+            commentListElement.insertBefore(elem, commentListElement.childNodes[0])
+          }
+          localStorage.setItem(obj.id, "true")
+          localStorage.setItem("author", obj.username)
+          localStorage.setItem("email", obj.email)
+          submit.disabled = false
+          editor.textContent = COMMENT_PLACEHOLDER
+          editor.classList.add("placeholder")
+        })
+        .catch((err) => {
+          submit.disabled = false
+          console.log(err)
+        })
     })
   }
 
