@@ -301,11 +301,12 @@ const DEMO_HTML = `
 // === FRONTEND CODE ===
 function frontend() {
   const COMMENT_PLACEHOLDER = "Type Comment Here (at least 3 chars)"
+  const BASE_URL = document.currentScript.src.replace("/itte.js", "")
   // Insert the style element first
   let styleLink = document.createElement('link')
   styleLink.rel = "stylesheet"
   styleLink.type = "text/css"
-  styleLink.href = document.currentScript.src.replace("itte.js", "itte.css")
+  styleLink.href = `${BASE_URL}/itte.css`
   document.getElementsByTagName("head")[0].appendChild(styleLink)
 
   var commentElement = null
