@@ -306,7 +306,7 @@ const DEMO_HTML = `
 
 // === FRONTEND CODE ===
 function frontend() {
-  const COMMENT_PLACEHOLDER = "Type Comment Here (at least 3 chars)"
+  const COMMENT_PLACEHOLDER = "Type Comment Here (> 2 chars)"
   const BASE_URL = document.currentScript.src.replace("/itte.js", "")
   // Insert the style element first
   let styleLink = document.createElement('link')
@@ -361,6 +361,7 @@ function frontend() {
               <input type="submit" value="Submit">
             </p>
           </section>
+          <span style="font-size: 0.8em; color: grey;">New comments may take up to 1 minute to appear</span>
         </div>
       </div>
       <div id="itte-root">
