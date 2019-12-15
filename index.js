@@ -507,7 +507,7 @@ function frontend() {
           <span class="spacer">•</span>
           <a class="permalink" href="#itte-${index}">
             <time title="${created_at.toLocaleString()}" datetime="${created_at.toString()}">
-              ${timeSince(created_at)}
+              ${timeSince(created_at)} ago
             </time>
           </a>
           <span class="spacer spacer-edited" style="display: none">•</span>
