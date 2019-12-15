@@ -19,6 +19,10 @@ function makeid(length) {
   return result;
 }
 
+String.prototype.replaceAll = function(orig, rep) {
+  return this.split(orig).join(rep)
+}
+
 async function handleRequest(request) {
   let url = new URL(request.url)
 
@@ -146,8 +150,8 @@ function validateCommentObject(obj) {
 }
 
 function sanitizeHTML(str) {
-  return str.replace("<", "&lt;")
-    .replace(">", "&gt;")
+  return str.replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
 }
 
 async function listComments(request, url) {
@@ -231,7 +235,7 @@ async function editComment(request, url) {
     return buildErrorResponse(request, "Wrong Secret")
   }
 
-  origData.content = data.content
+  origData.content = sanitizeHTML(data.content)
   await KV.put(key, JSON.stringify(origData))
 
   delete origData.secret
@@ -525,8 +529,9 @@ function frontend() {
           editorWrapper = document.createElement("div")
           editorWrapper.classList.add("textarea-wrapper")
           editorWrapper.innerHTML = `
-            <div class="textarea" contenteditable="true">${text.textContent}</div>
+            <div class="textarea" contenteditable="true"></div>
           `
+          editorWrapper.getElementsByClassName("textarea")[0].textContent = text.textContent
           elem.getElementsByClassName("text-wrapper")[0].insertBefore(editorWrapper, text)
         } else if (!updating) {
           updating = true
@@ -555,7 +560,7 @@ function frontend() {
               elem.getElementsByClassName("avatar")[0].style["display"] = "block"
               elem.getElementsByClassName("text-wrapper")[0].removeChild(editorWrapper)
               text.style["display"] = "block"
-              text.textContent = resp.content
+              text.innerHTML = resp.content // Already sanitized, have to use innerHTML due to &lt; and &gt;
             })
             .catch((err) => {
               updating = false
