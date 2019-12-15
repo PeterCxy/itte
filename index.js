@@ -477,7 +477,7 @@ function frontend() {
       })
       .catch((err) => {
         console.log(err)
-        // TODO: Show a load button?
+        loadMoreElement.style["visibility"] = "visible"
       })
   }
 
