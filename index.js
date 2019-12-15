@@ -92,15 +92,15 @@ function validateCommentObject(obj) {
     throw "No Valid Secret Provided"
   }
 
-  if (typeof obj.content != "string" || obj.content.length >= 1024) {
+  if (typeof obj.content != "string" || obj.content.length < 3 || obj.content.length >= 1024) {
     throw "No Valid Content Provided"
   }
 
-  if (typeof obj.username != "string" || obj.username.length >= 32) {
+  if (typeof obj.username != "string" || obj.username.length < 1 || obj.username.length >= 32) {
     throw "No Valid User Name Provided"
   }
 
-  if (typeof obj.email != "string" || obj.email.length >= 255) {
+  if (typeof obj.email != "string" || obj.email.length < 1 || obj.email.length >= 255) {
     throw "No E-mail Provided"
   }
 
