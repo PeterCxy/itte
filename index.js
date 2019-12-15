@@ -426,6 +426,8 @@ function frontend() {
         <div class="text">
           ${comm.content}
         </div>
+        <div class="itte-comment-footer">
+        </div>
       </div>
     `
     elem.getElementsByClassName("avatar")[0]
