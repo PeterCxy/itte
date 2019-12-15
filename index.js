@@ -311,6 +311,9 @@ function frontend() {
 
   var commentElement = null
   var commentPath = null
+  var commentListElement = null
+  var currentCursor = null
+  var commentList = []
   function contentLoaded() {
     if (localStorage.getItem("secret") == null) {
       // Make sure we have generated a secret here
@@ -329,6 +332,7 @@ function frontend() {
     }
 
     buildCommentForm()
+    fetchComments()
   }
 
   function buildCommentForm() {
@@ -351,7 +355,11 @@ function frontend() {
           </section>
         </div>
       </div>
+      <div id="itte-root">
+      </div>
     `
+
+    commentListElement = document.getElementById("itte-root")
     
     initializeEditor()
   }
@@ -373,7 +381,84 @@ function frontend() {
     })
   }
 
+  function fetchComments() {
+    let url = `${BASE_URL}/comments?path=${encodeURIComponent(commentPath)}`
+    if (currentCursor != null) {
+      url += `&cursor=${currentCursor}`
+    }
+    fetch(url)
+      .then((resp) => resp.json())
+      .then((obj) => {
+        console.log(obj)
+        for (comm of obj.list) {
+          commentList.push(comm)
+          let index = commentList.length - 1
+          let elem = createCommentElement(comm, index)
+          commentListElement.appendChild(elem)
+        }
+
+        currentCursor = obj.cursor
+      })
+      .catch((err) => {
+        console.log(err)
+        // TODO: Show a load button?
+      })
+  }
+
+  function createCommentElement(comm, index) {
+    let created_at = new Date(comm.created_at)
+    let elem = document.createElement("div")
+    elem.setAttribute("id", `itte-${index}`)
+    elem.classList.add("itte-comment")
+    elem.classList.add("itte-no-votes")
+    elem.innerHTML = `
+      <div class="avatar"></div>
+      <div class="text-wrapper">
+        <div class="itte-comment-header" role="meta">
+          <span class="author">${comm.username}</span>
+          <span class="spacer">&sol;</span>
+          <a class="permalink" href="#itte-${index}">
+            <time title="${created_at.toLocaleString()}" datetime="${created_at.toString()}">
+              ${timeSince(created_at)}
+            </time>
+          </a>
+        </div>
+        <div class="text">
+          ${comm.content}
+        </div>
+      </div>
+    `
+    return elem
+  }
+
   document.addEventListener("DOMContentLoaded", contentLoaded)
+
+  function timeSince(date) {
+    var seconds = Math.floor((new Date() - date) / 1000);
+  
+    var interval = Math.floor(seconds / 31536000);
+  
+    if (interval > 1) {
+      return interval + " years";
+    }
+    interval = Math.floor(seconds / 2592000);
+    if (interval > 1) {
+      return interval + " months";
+    }
+    interval = Math.floor(seconds / 86400);
+    if (interval > 1) {
+      return interval + " days";
+    }
+    interval = Math.floor(seconds / 3600);
+    if (interval > 1) {
+      return interval + " hours";
+    }
+    interval = Math.floor(seconds / 60);
+    if (interval > 1) {
+      return interval + " minutes";
+    }
+    return Math.floor(seconds) + " seconds";
+  }
 }
 
 // Copycat from ISSO, thanks a lot :)
