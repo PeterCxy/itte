@@ -236,6 +236,7 @@ async function editComment(request, url) {
   }
 
   origData.content = sanitizeHTML(data.content)
+  origData.edited = true
   await KV.put(key, JSON.stringify(origData))
 
   delete origData.secret
@@ -498,6 +499,8 @@ function frontend() {
               ${timeSince(created_at)}
             </time>
           </a>
+          <span class="spacer spacer-edited" style="display: none">&sol;</span>
+          <a class="permalink permalink-edited" href="#itte-${index}" style="display: none">edited</a>
           <span class="spacer spacer-edit" style="visibility: hidden">&sol;</span>
           <a class="permalink permalink-edit" href="#" style="visibility: hidden">Edit</a>
         </div>
@@ -510,6 +513,12 @@ function frontend() {
     `
     elem.getElementsByClassName("avatar")[0]
       .appendChild(generateIdenticon(comm.content.hashCode(), 4, 48))
+
+    if (comm.edited) {
+      elem.getElementsByClassName("spacer-edited")[0].style["display"] = "inline"
+      elem.getElementsByClassName("permalink-edited")[0].style["display"] = "inline"
+    }
+
     if (localStorage.getItem(comm.id) == "true") {
       // This is something we have posted; we can edit
       elem.getElementsByClassName("spacer-edit")[0].style["visibility"] = "visible"
