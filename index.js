@@ -433,13 +433,13 @@ function frontend() {
         .then((obj) => {
           postedCommentCount++
           commentList.splice(0, 0, obj)
+          localStorage.setItem(obj.id, "true") // Set this first for createCommentElement()
           let elem = createCommentElement(obj, -postedCommentCount)
           if (!commentListElement.hasChildNodes()) {
             commentListElement.appendChild(elem)
           } else {
             commentListElement.insertBefore(elem, commentListElement.childNodes[0])
           }
-          localStorage.setItem(obj.id, "true")
           localStorage.setItem("author", obj.username)
           localStorage.setItem("email", obj.email)
           submit.disabled = false
