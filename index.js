@@ -285,6 +285,7 @@ const HANDLERS = {
 }
 const DEMO_HTML = `
 <head>
+  <meta charset="UTF-8">
   <title>Itte Demo Site</title>
   <script src="/itte.js"></script>
   <style>
@@ -493,15 +494,15 @@ function frontend() {
       <div class="text-wrapper">
         <div class="itte-comment-header" role="meta">
           <span class="author">${comm.username}</span>
-          <span class="spacer">&sol;</span>
+          <span class="spacer">•</span>
           <a class="permalink" href="#itte-${index}">
             <time title="${created_at.toLocaleString()}" datetime="${created_at.toString()}">
               ${timeSince(created_at)}
             </time>
           </a>
-          <span class="spacer spacer-edited" style="display: none">&sol;</span>
+          <span class="spacer spacer-edited" style="display: none">•</span>
           <a class="permalink permalink-edited" href="#itte-${index}" style="display: none">edited</a>
-          <span class="spacer spacer-edit" style="visibility: hidden">&sol;</span>
+          <span class="spacer spacer-edit" style="visibility: hidden">•</span>
           <a class="permalink permalink-edit" href="#" style="visibility: hidden">Edit</a>
         </div>
         <div class="text">
