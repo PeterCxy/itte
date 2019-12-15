@@ -315,6 +315,7 @@ function frontend() {
   var currentCursor = null
   var commentList = []
   var postedCommentCount = 0
+  var loadMoreElement = null
   function contentLoaded() {
     if (localStorage.getItem("secret") == null) {
       // Make sure we have generated a secret here
@@ -358,11 +359,20 @@ function frontend() {
       </div>
       <div id="itte-root">
       </div>
+      <div class="text-wrapper">
+        <a href="#" id="itte-load-more" style="visibility: hidden">Load more...</a>
+      </div>
     `
 
     commentListElement = document.getElementById("itte-root")
+    loadMoreElement = document.getElementById("itte-load-more")
     
     initializeEditor()
+
+    loadMoreElement.addEventListener("click", (ev) => {
+      ev.preventDefault()
+      fetchComments()
+    })
   }
 
   function initializeEditor() {
@@ -440,6 +450,7 @@ function frontend() {
   }
 
   function fetchComments() {
+    loadMoreElement.style["visibility"] = "hidden"
     let url = `${BASE_URL}/comments?path=${encodeURIComponent(commentPath)}`
     if (currentCursor != null) {
       url += `&cursor=${currentCursor}`
@@ -456,6 +467,10 @@ function frontend() {
         }
 
         currentCursor = obj.cursor
+
+        if (currentCursor) {
+          loadMoreElement.style["visibility"] = "visible"
+        }
       })
       .catch((err) => {
         console.log(err)
@@ -738,11 +753,13 @@ const FRONTEND_CSS = `
   clear: left;
 }
 .itte-feedlink,
+#itte-load-more,
 .itte-comment > div.text-wrapper > .itte-comment-footer a {
   font-weight: bold;
   text-decoration: none;
 }
 .itte-feedlink:hover,
+#itte-load-more:hover,
 .itte-comment > div.text-wrapper > .itte-comment-footer a:hover {
   color: #111111 !important;
   text-shadow: #aaaaaa 0 0 1px !important;
