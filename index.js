@@ -307,6 +307,7 @@ const DEMO_HTML = `
 // === FRONTEND CODE ===
 function frontend() {
   const COMMENT_PLACEHOLDER = "Type Comment Here (> 2 chars)"
+  const DEFAULT_NOTICE = "New comments may take up to 1 minute to appear"
   const BASE_URL = document.currentScript.src.replace("/itte.js", "")
   // Insert the style element first
   let styleLink = document.createElement('link')
@@ -322,6 +323,7 @@ function frontend() {
   var commentList = []
   var postedCommentCount = 0
   var loadMoreElement = null
+  var noticeElement = null
   function contentLoaded() {
     if (localStorage.getItem("secret") == null) {
       // Make sure we have generated a secret here
@@ -361,7 +363,7 @@ function frontend() {
               <input type="submit" value="Submit">
             </p>
           </section>
-          <span style="font-size: 0.8em; color: grey;">New comments may take up to 1 minute to appear</span>
+          <span id="itte-notice" style="font-size: 0.8em; color: grey;">${DEFAULT_NOTICE}</span>
         </div>
       </div>
       <div id="itte-root">
@@ -373,6 +375,7 @@ function frontend() {
 
     commentListElement = document.getElementById("itte-root")
     loadMoreElement = document.getElementById("itte-load-more")
+    noticeElement = document.getElementById("itte-notice")
     
     initializeEditor()
 
@@ -411,7 +414,10 @@ function frontend() {
     }
 
     submit.addEventListener("click", () => {
-      if (!email.checkValidity()) return
+      if (!email.checkValidity()) {
+        noticeElement.textContent = "Your e-mail is malformed."
+        return
+      }
 
       let obj = {
         secret: localStorage.getItem("secret"),
@@ -422,6 +428,7 @@ function frontend() {
       }
 
       if (obj.content == COMMENT_PLACEHOLDER || obj.content.length < 3 || obj.username.length < 1 || obj.email.length < 1) {
+        noticeElement.textContent = "Please ensure your content is longer or equal to 3 characters, and username / email are not empty."
         return
       }
 
@@ -448,9 +455,11 @@ function frontend() {
           submit.disabled = false
           editor.textContent = COMMENT_PLACEHOLDER
           editor.classList.add("placeholder")
+          noticeElement.textContent = DEFAULT_NOTICE
         })
         .catch((err) => {
           submit.disabled = false
+          noticeElement.textContent = "Error happened while connecting to server; please try again."
           console.log(err)
         })
     })
