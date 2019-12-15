@@ -1,3 +1,8 @@
+const CORS_ALLOW_ORIGIN = [
+  "https://itte.takanashi.workers.dev",
+  "https://demo.typeblog.net"
+]
+
 addEventListener('fetch', event => {
   event.respondWith(handleRequest(event.request))
 })
@@ -32,9 +37,40 @@ async function handleRequest(request) {
   })
 }
 
-function buildErrorResponse(err) {
+function buildErrorResponse(request, err) {
   return new Response(err, {
-    status: 400
+    status: 400,
+    headers: addCORSHeaders(request, {})
+  })
+}
+
+function addCORSHeaders(request, headers) {
+  if (!request.headers.has("origin")) {
+    return headers
+  }
+
+  let origin = request.headers.get("origin")
+
+  for (o of CORS_ALLOW_ORIGIN) {
+    if (origin == o) {
+      headers["Access-Control-Allow-Origin"] = o
+      headers["Vary"] = "Origin"
+    }
+  }
+
+  return headers
+}
+
+async function handleCORSHeaders(request) {
+  if (!request.headers.has("origin")) {
+    return new Response(null, {
+      status: 403
+    })
+  }
+
+  return new Response(null, {
+    status: 200,
+    headers: addCORSHeaders(request, {})
   })
 }
 
@@ -44,7 +80,7 @@ async function postComment(request, url) {
   try {
     data = await request.json()
   } catch (err) {
-    return buildErrorResponse("Invalid JSON object")
+    return buildErrorResponse(request, "Invalid JSON object")
   }
 
   try {
@@ -71,9 +107,9 @@ async function postComment(request, url) {
   delete data.secret
 
   return new Response(JSON.stringify(data), {
-    headers: {
+    headers: addCORSHeaders(request, {
       "content-type": "application/json"
-    }
+    })
   })
 }
 
@@ -116,7 +152,7 @@ function sanitizeHTML(str) {
 
 async function listComments(request, url) {
   if (!url.searchParams.has("path")) {
-    return buildErrorResponse("What Path do you want?")
+    return buildErrorResponse(request, "What Path do you want?")
   }
 
   let path = url.searchParams.get("path")
@@ -127,7 +163,7 @@ async function listComments(request, url) {
     try {
       limit = Number.parseInt(url.searchParams.get("limit"))
     } catch (err) {
-      return buildErrorResponse("Invalid number")
+      return buildErrorResponse(request, "Invalid number")
     }
   }
 
@@ -156,9 +192,9 @@ async function listComments(request, url) {
   }
 
   return new Response(JSON.stringify(res), {
-    headers: {
+    headers: addCORSHeaders(request, {
       "content-type": "application/json"
-    }
+    })
   })
 }
 
@@ -168,7 +204,7 @@ async function editComment(request, url) {
   try {
     data = await request.json()
   } catch (err) {
-    return buildErrorResponse("Invalid JSON object")
+    return buildErrorResponse(request, "Invalid JSON object")
   }
 
   if (!(data.path && data.created_at && data.content && data.secret && data.id
@@ -178,7 +214,7 @@ async function editComment(request, url) {
       && typeof data.secret == "string"
       && typeof data.id == "string"
       && data.content.length < 1024)) {
-    return buildErrorResponse("You must specify `path`, `id`, `created_at`, `secret` and new `content`")
+    return buildErrorResponse(request, "You must specify `path`, `id`, `created_at`, `secret` and new `content`")
   }
 
   let dateKey = Number.MAX_SAFE_INTEGER - data.created_at
@@ -187,12 +223,12 @@ async function editComment(request, url) {
 
   let origData = await KV.get(key)
   if (!origData) {
-    return buildErrorResponse("Original Comment Not Found")
+    return buildErrorResponse(request, "Original Comment Not Found")
   }
 
   origData = JSON.parse(origData)
   if (origData.secret != data.secret) {
-    return buildErrorResponse("Wrong Secret")
+    return buildErrorResponse(request, "Wrong Secret")
   }
 
   origData.content = data.content
@@ -201,14 +237,15 @@ async function editComment(request, url) {
   delete origData.secret
 
   return new Response(JSON.stringify(origData), {
-    headers: {
+    headers: addCORSHeaders(request, {
       "content-type": "application/json"
-    }
+    })
   })
 }
 
 const HANDLERS = {
   "/comments": {
+    "OPTIONS": handleCORSHeaders,
     "PUT": postComment,
     "GET": listComments,
     "PATCH": editComment
