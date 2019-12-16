@@ -608,7 +608,7 @@ function frontend() {
       </div>
     `
     elem.getElementsByClassName("avatar")[0]
-      .appendChild(generateIdenticon(comm.content.hashCode(), 4, 48))
+      .appendChild(generateIdenticon((comm.email + comm.username).hashCode(), 4, 48))
 
     if (comm.edited) {
       elem.getElementsByClassName("spacer-edited")[0].style["display"] = "inline"
