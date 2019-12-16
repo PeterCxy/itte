@@ -386,7 +386,7 @@ async function aesGcmDecrypt(ciphertext, password) {
 
 // === FRONTEND CODE ===
 function frontend() {
-  const COMMENT_PLACEHOLDER = "Type Comment Here (> 2 chars)"
+  const COMMENT_PLACEHOLDER = "Type Comment Here (2 < characters < 1024)"
   const DEFAULT_NOTICE = "New comments may take up to 1 minute to appear"
   const BASE_URL = document.currentScript.src.replace("/itte.js", "")
   // Insert the style element first
@@ -509,6 +509,11 @@ function frontend() {
 
       if (obj.content == COMMENT_PLACEHOLDER || obj.content.length < 3 || obj.username.length < 1 || obj.email.length < 1) {
         noticeElement.textContent = "Please ensure your content is longer or equal to 3 characters, and username / email are not empty."
+        return
+      }
+
+      if (obj.content.length > 1024) {
+        noticeElement.textContent = "Your content is longer than 1024 characters."
         return
       }
 
