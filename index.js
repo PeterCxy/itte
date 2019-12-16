@@ -1,5 +1,5 @@
-// Secret used for encrypting cursor from Cloudflare to use as a client-side cursor
-const SECRET_CURSOR = "abcdefg"
+// KV Key of secret used for encrypting cursor from Cloudflare to use as a client-side cursor
+const SECRET_CURSOR_KV_KEY = "secret_cursor"
 const CORS_ALLOW_ORIGIN = [
   "https://itte.takanashi.workers.dev",
   "https://demo.typeblog.net"
@@ -181,7 +181,7 @@ async function listComments(request, url) {
   let list = await KV.list({
     prefix: `comment:${path}:`,
     limit: limit,
-    cursor: cursor != null ? await aesGcmDecrypt(cursor, SECRET_CURSOR) : null
+    cursor: cursor != null ? await aesGcmDecrypt(cursor, await KV.get(SECRET_CURSOR_KV_KEY)) : null
   })
   let res = {
     ok: true,
@@ -195,7 +195,7 @@ async function listComments(request, url) {
   }
 
   if (!list.list_complete) {
-    res.cursor = await aesGcmEncrypt(list.cursor, SECRET_CURSOR)
+    res.cursor = await aesGcmEncrypt(list.cursor, await KV.get(SECRET_CURSOR_KV_KEY))
   }
 
   return new Response(JSON.stringify(res), {
