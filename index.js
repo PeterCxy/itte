@@ -152,6 +152,7 @@ function validateCommentObject(obj) {
 function sanitizeHTML(str) {
   return str.replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
+    .replaceAll("&", "&amp;")
 }
 
 async function listComments(request, url) {
