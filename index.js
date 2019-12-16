@@ -98,7 +98,7 @@ async function postComment(request, url) {
   }
 
   data.created_at = Date.now()
-  data.content = sanitizeHTML(data.content)
+  data.content = sanitizeHTML(data.content).trim()
   data.id = makeid(5)
 
   // Complement the actual key in store
@@ -238,8 +238,11 @@ async function editComment(request, url) {
     return buildErrorResponse(request, "Wrong Secret")
   }
 
-  origData.content = sanitizeHTML(data.content)
-  origData.edited = true
+  newContent = sanitizeHTML(data.content).trim()
+  if (origData.content != newContent) {
+    origData.edited = true
+    origData.content = newContent
+  }
   await KV.put(key, JSON.stringify(origData))
 
   delete origData.secret
