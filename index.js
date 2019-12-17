@@ -61,6 +61,7 @@ function addCORSHeaders(request, headers) {
     if (origin == o) {
       headers["Access-Control-Allow-Origin"] = o
       headers["Access-Control-Allow-Methods"] = "GET, PUT, PATCH"
+      headers["Access-Control-Allow-Headers"] = "Content-Type"
       headers["Vary"] = "Origin"
     }
   }
