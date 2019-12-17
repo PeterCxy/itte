@@ -2,6 +2,8 @@
 
 A toy comment system that runs on Cloudflare Workers.
 
+My project consists of mostly spaghetti code to play with CF workers, so unless you are willing to debug some random issues with unreadable code, you should probably not use this.
+
 Most of the styles used in this project come from Isso, a truly self-hosted comment system.
 
 ### Deployment
