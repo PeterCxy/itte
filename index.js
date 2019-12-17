@@ -414,9 +414,9 @@ function frontend() {
   var loadMoreElement = null
   var noticeElement = null
   function contentLoaded() {
-    if (localStorage.getItem("secret") == null) {
+    if (localStorage.getItem("itte_secret") == null) {
       // Make sure we have generated a secret here
-      localStorage.setItem("secret", makeid(20))
+      localStorage.setItem("itte_secret", makeid(20))
     }
 
     commentElement = document.getElementById("itte-thread")
@@ -494,12 +494,12 @@ function frontend() {
     let email = commentElement.querySelector('input[name="email"]')
     let submit = commentElement.querySelector('input[type="submit"]')
 
-    if (localStorage.getItem("author") != null) {
-      author.value = localStorage.getItem("author")
+    if (localStorage.getItem("itte_author") != null) {
+      author.value = localStorage.getItem("itte_author")
     }
 
-    if (localStorage.getItem("email") != null) {
-      email.value = localStorage.getItem("email")
+    if (localStorage.getItem("itte_email") != null) {
+      email.value = localStorage.getItem("itte_email")
     }
 
     submit.addEventListener("click", () => {
@@ -509,7 +509,7 @@ function frontend() {
       }
 
       let obj = {
-        secret: localStorage.getItem("secret"),
+        secret: localStorage.getItem("itte_secret"),
         content: editor.textContent,
         username: author.value,
         email: email.value,
@@ -544,8 +544,8 @@ function frontend() {
           } else {
             commentListElement.insertBefore(elem, commentListElement.childNodes[0])
           }
-          localStorage.setItem("author", obj.username)
-          localStorage.setItem("email", obj.email)
+          localStorage.setItem("itte_author", obj.username)
+          localStorage.setItem("itte_email", obj.email)
           submit.disabled = false
           editor.textContent = COMMENT_PLACEHOLDER
           editor.classList.add("placeholder")
@@ -651,7 +651,7 @@ function frontend() {
           updating = true
 
           let obj = {
-            secret: localStorage.getItem("secret"),
+            secret: localStorage.getItem("itte_secret"),
             content: elem.getElementsByClassName("textarea")[0].textContent,
             username: comm.username,
             email: comm.email,
