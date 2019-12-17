@@ -60,6 +60,7 @@ function addCORSHeaders(request, headers) {
   for (o of CORS_ALLOW_ORIGIN) {
     if (origin == o) {
       headers["Access-Control-Allow-Origin"] = o
+      headers["Access-Control-Allow-Methods"] = "GET, PUT, PATCH"
       headers["Vary"] = "Origin"
     }
   }
