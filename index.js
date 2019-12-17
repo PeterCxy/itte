@@ -97,9 +97,15 @@ async function postComment(request, url) {
     })
   }
 
-  data.created_at = Date.now()
-  data.content = sanitizeHTML(data.content).trim()
-  data.id = makeid(5)
+  data = {
+    created_at: Date.now(),
+    content: sanitizeHTML(data.content).trim(),
+    id: makeid(5),
+    path: data.path,
+    username: data.username,
+    secret: data.secret,
+    email: data.email
+  }
 
   // Complement the actual key in store
   // When lexicographically ordered, this will be in reversed-time order
