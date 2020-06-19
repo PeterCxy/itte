@@ -2,6 +2,7 @@
 const SECRET_CURSOR_KV_KEY = "secret_cursor"
 const CORS_ALLOW_ORIGIN = [
   "https://itte.takanashi.workers.dev",
+  "https://paprika.takanashi.workers.dev",
   "https://demo.typeblog.net"
 ]
 
