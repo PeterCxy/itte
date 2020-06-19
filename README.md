@@ -1,5 +1,7 @@
 # 言って (Itte)
 
+Main Repository: <https://cgit.typeblog.net/itte/>. __GitHub is only a mirror.__
+
 A toy comment system that runs on Cloudflare Workers.
 
 My project consists of mostly spaghetti code to play with CF workers, so unless you are willing to debug some random issues with unreadable code, you should probably not use this.
